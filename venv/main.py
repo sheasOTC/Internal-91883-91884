@@ -1,9 +1,10 @@
 import json
 import os.path
 import random
+from datetime import datetime
 
-if os.path.isfile(
-        'passwords.json') == False:  # Checks if passwords.json file exists. Creates and writes a {} if file does not exist
+if not os.path.isfile(
+        'passwords.json'):  # Checks if passwords.json file exists. Creates and writes a {} if file does not exist
     with open('passwords.json', 'w') as passwords:
         json.dump({}, passwords)
 else:
@@ -11,19 +12,25 @@ else:
 
 
 def generate(use, id):
-    with open('passwords.json', 'w') as passwords: #Gets the JSON file
-        password = json.load(passwords)
+    with open('passwords.json', 'r') as f:  # Gets the JSON file
+        password = json.load(f)
     if use in password:
         print(f"There is already a password for {use}.\n Please enter another use.")
     else:
-        chars = list('~!@#$%^&*()_+`1234567890-=qwertyuiop[]\QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:"zxcvbnm,./ZXCVBNM<>?') #List of characters used for password generation
+        now = datetime.now()
+        dateTime = now.strftime("%d/%m/%Y %H:%M:%S")
+        chars = list(
+            '~!@#$%^&*()_+`1234567890-=qwertyuiop[]\QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:"zxcvbnm,./ZXCVBNM<>?')  # List of characters used for password generation
         generated = []
         for char in range(random.randint(8, 20)):
             generated.append(chars[random.randint(0, 92)])
             joint = ''.join(generated)
-        passwords[use] = {}
-        passwords[use]["Email/Username"] = id
-        passwords[use]["Password"] = joint
-    json.dump(password,passwords) #Dumps all entered content into the JSON file
+        password[use] = {}
+        password[use]["Email/Username"] = id
+        password[use]["Password"] = joint
+        password[use]["Date/Time"] = dateTime
+    with open('passwords.json', 'w') as f:  # Gets the JSON file
+        json.dump(password, f)  # Dumps all entered content into the JSON file
 
-generate("william's chin","scottw@stu.otc.school.nz")
+
+generate('school', 'alekseeve@stu.otc.school.nz')
