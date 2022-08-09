@@ -19,15 +19,18 @@ def prompt():
     elif selection.lower() == "store":
         use = input("What is usage for this password?\n")
         login = input("What is the login for this password\n")
-        generate(use,login)
-        print(f"A password for {use}")
+        key = input(f"What is the password for {use}?")
+        store(use,login,key)
+        print(f"Password for {use} has successfully been stored")
     elif selection.lower() == "list":
         list_usages()
     elif selection.lower() == "inspect":
         use = input("What is usage for this password?\n")
         inspect(use)
     elif selection.lower() == "remove":
-
+        use = input("What is the use of the password you want to delete?")
+        delete(use)
+        print(f"Successfully deleted {}")
     elif selection.lower() == "exit":
         quit()
 def generate(use, login):
