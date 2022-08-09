@@ -14,16 +14,22 @@ def prompt():
     if selection.lower() == "generate":
         use = input("What is usage for this password?\n")
         login = input("What is the login for this password\n")
-        generate()
-        print(f"A password for {use}")
+        generate(use,login)
+        print(f"A password for {use} has successfully been generated")
     elif selection.lower() == "store":
-
+        use = input("What is usage for this password?\n")
+        login = input("What is the login for this password\n")
+        generate(use,login)
+        print(f"A password for {use}")
     elif selection.lower() == "list":
-
+        list_usages()
     elif selection.lower() == "inspect":
-
+        use = input("What is usage for this password?\n")
+        inspect(use)
     elif selection.lower() == "remove":
 
+    elif selection.lower() == "exit":
+        quit()
 def generate(use, login):
     with open('passwords.json', 'r') as f:  # Gets the JSON file
         password = json.load(f)
