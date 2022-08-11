@@ -1,6 +1,6 @@
 import json
 import time
-from cryptography.fernet import Fernet
+import rsa
 import random
 from datetime import datetime
 
