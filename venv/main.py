@@ -12,23 +12,31 @@ def prompt():
                       "To store a password enter: Store\n "
                       "To list all uses for passwords enter: List\n "
                       "To see details of a password enter: Inspect\n "
-                      "To delete a password enter: Delete\n"
-                      "To stop during a command enter: Stop\n"
-                      " To exit the program enter: Exit\n")
+                      "To delete a password enter: Delete\n "
+                      "To stop during a command enter: Stop\n "
+                      "To exit the program enter: Exit\n "
+                      "Note: Stop cannot be used for any usage/login/password. (Not Caps Sensitive)\n")
     if selection.lower() == "generate":
         use = input("What is usage for this password?\n")
+        if use.lower() == "stop": prompt()
         while use in password:
+            if use.lower() == "stop": prompt()
             use = input(f"{use} is already being used for a password. Please enter another\n")
         login = input("What is the login for this password\n")
+        if login.lower() == "stop": prompt()
         generate(use, login)
         print(f"A password for {use} has successfully been generated")
         prompt()
     elif selection.lower() == "store":
         use = input("What is usage for this password?\n")
+        if use.lower() == "stop": prompt()
         while use in password:
+            if use.lower() == "stop": prompt()
             use = input(f"{use} is already being used for a password. Please enter another\n")
         login = input("What is the login for this password\n")
+        if login.lower() == "stop": prompt()
         key = input(f"What is the password for {use}?\n")
+        if key.lower() == "stop": prompt()
         store(use, login, key)
         print(f"Password for {use} has successfully been stored")
         prompt()
@@ -41,11 +49,9 @@ def prompt():
             prompt()
         else:
             use = input("What is usage for this password?\n")
-            if use.lower() == "exit":
-                prompt()
+            if use.lower() == "stop": prompt()
             while use not in password:
-                if use.lower() == "exit":
-                    prompt()
+                if use.lower() == "stop": prompt()
                 use = input(f"Please enter a valid usage.\n")
             inspect(use)
             prompt()
@@ -55,7 +61,9 @@ def prompt():
             prompt()
         else:
             use = input("What is the use of the password you want to delete? (Caps Sensitive)\n")
+            if use.lower() == "stop": prompt()
             while use not in password:
+                if use.lower() == "stop": prompt()
                 use = input(f"{use} is not a password. Please enter correctly. (Caps Sensitive)\n")
             delete(use)
             print(f"Successfully deleted {use}")
