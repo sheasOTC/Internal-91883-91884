@@ -1,11 +1,12 @@
 import json
 import time
+from cryptography.fernet import Fernet
 import random
 from datetime import datetime
 
 
 def prompt():
-    with open('passwords.json', 'r') as f:  # Gets the JSON file
+    with open('passwords.json', 'r') as f:  # Gets the JSON file and stores as variable
         password = json.load(f)
     selection = input("Welcome to Passgen!\n "
                       "To generate a password enter: Generate\n "
@@ -18,15 +19,15 @@ def prompt():
                       "Note: Stop cannot be used for any usage/login/password. (Not Caps Sensitive)\n")
     if selection.lower() == "generate":
         use = input("What is usage for this password?\n")
-        if use.lower() == "stop": prompt()
-        while use in password:
+        if use.lower() == "stop": prompt()  # Checks if "stop" is typed during any points during the prompts
+        while use in password:  # Continuously checks if variable use is in the passwords.json file asking to enter a new one until user enters non-taken usage
             if use.lower() == "stop": prompt()
             use = input(f"{use} is already being used for a password. Please enter another\n")
         login = input("What is the login for this password\n")
         if login.lower() == "stop": prompt()
         generate(use, login)
         print(f"A password for {use} has successfully been generated")
-        prompt()
+        prompt() #Re-runs the selection text
     elif selection.lower() == "store":
         use = input("What is usage for this password?\n")
         if use.lower() == "stop": prompt()
@@ -44,7 +45,7 @@ def prompt():
         list_usages()
         prompt()
     elif selection.lower() == "inspect":
-        if len(password) == 0:
+        if len(password) == 0: #Checks if any passwords are stored in passwords.json file
             print("You have no passwords stored.")
             prompt()
         else:
@@ -62,7 +63,7 @@ def prompt():
         else:
             use = input("What is the use of the password you want to delete? (Caps Sensitive)\n")
             if use.lower() == "stop": prompt()
-            while use not in password:
+            while use not in password:  # Checks if there is a name that exist
                 if use.lower() == "stop": prompt()
                 use = input(f"{use} is not a password. Please enter correctly. (Caps Sensitive)\n")
             delete(use)
