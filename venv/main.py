@@ -10,16 +10,17 @@ def prompt():
     selection = input("Welcome to Passgen!\n "
                       "To generate a password enter: Generate\n "
                       "To store a password enter: Store\n "
-                      "To list all passwords enter: List\n "
+                      "To list all uses for passwords enter: List\n "
                       "To see details of a password enter: Inspect\n "
                       "To delete a password enter: Delete\n"
+                      "To stop during a command enter: Stop\n"
                       " To exit the program enter: Exit\n")
     if selection.lower() == "generate":
         use = input("What is usage for this password?\n")
         while use in password:
             use = input(f"{use} is already being used for a password. Please enter another\n")
         login = input("What is the login for this password\n")
-        generate(use,login)
+        generate(use, login)
         print(f"A password for {use} has successfully been generated")
         prompt()
     elif selection.lower() == "store":
@@ -35,16 +36,30 @@ def prompt():
         list_usages()
         prompt()
     elif selection.lower() == "inspect":
-        use = input("What is usage for this password?\n")
-        inspect(use)
-        prompt()
+        if len(password) == 0:
+            print("You have no passwords stored.")
+            prompt()
+        else:
+            use = input("What is usage for this password?\n")
+            if use.lower() == "exit":
+                prompt()
+            while use not in password:
+                if use.lower() == "exit":
+                    prompt()
+                use = input(f"Please enter a valid usage.\n")
+            inspect(use)
+            prompt()
     elif selection.lower() == "delete":
-        use = input("What is the use of the password you want to delete? (Caps Sensitive)\n")
-        while use not in password:
-            use = input(f"{use} is not a password. Please enter correctly. (Caps Sensitive)\n")
-        delete(use)
-        print(f"Successfully deleted {use}")
-        prompt()
+        if len(password) == 0:
+            print("You have no passwords stored.")
+            prompt()
+        else:
+            use = input("What is the use of the password you want to delete? (Caps Sensitive)\n")
+            while use not in password:
+                use = input(f"{use} is not a password. Please enter correctly. (Caps Sensitive)\n")
+            delete(use)
+            print(f"Successfully deleted {use}")
+            prompt()
     elif selection.lower() == "exit":
         print("Exiting Passgen")
         time.sleep(0.5)
@@ -60,15 +75,16 @@ def generate(use, login):
     now = datetime.now()  # Gets the date and time
     dateTime = now.strftime("%d/%m/%Y %H:%M:%S")
     chars = list(
-        '~!@#$%^&*()_+`1234567890-=qwertyuiop[]QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:"zxcvbnm,./ZXCVBNM<>?')  # List of characters used for password generation
+        '~!@#$%^&*()_+`1234567890-=qwertyuiop[]QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:zxcvbnm,./ZXCVBNM<>?')  # List of characters used for password generation
     generated = []
     for char in range(random.randint(8, 20)):  # Randomly generates length of password
         generated.append(chars[random.randint(0, 92)])  # Adds one random character to list
         joint = ''.join(generated)
-    password[use] = {}
+    password[use] = {}  # Gets data ready to be dumped into JSON file
     password[use]["Email/Username"] = login
     password[use]["Password"] = joint
     password[use]["Date/Time"] = dateTime
+    print(f"The password for {use} is {joint}\n")
     with open('passwords.json', 'w') as f:  # Gets the JSON file
         json.dump(password, f)  # Gets the JSON file to dump information
 
@@ -90,8 +106,8 @@ def inspect(use):  # When user types a usage for a password that is valid it wil
     with open("passwords.json", 'r') as f:
         password = json.load(f)
     if use in password:
-        print(f"The details for {use} are " + "Email/Username:" + password[use]['Email/Username'] + " Password:" +
-              password[use]["Password"] + " Date and Time:" + password[use]["Date/Time"])
+        print(f"The details for {use}: \n" + "Email/Username:" + password[use]['Email/Username'] + " \nPassword:" +
+              password[use]["Password"] + " \nDate and time of creation:" + password[use]["Date/Time"])
     else:
         print(f"{use} does not exist.")
 
