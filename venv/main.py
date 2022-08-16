@@ -1,12 +1,24 @@
 import json
 import time
-import rsa
+from cryptography.fernet import Fernet
 import random
 from datetime import datetime
+import os.path
+
+if not os.path.exists('key.key'):  # Checks if file exist; ensures that key file is not replaced.
+    with open('key.key', 'wb') as f:
+        key = Fernet.generate_key()
+        f.write(key)  # Creates and stores key for encryption/decryption
+
+try:
+    with open('passwords.json', 'w') as f:
+        json.dump({}, f)
+except:
+    pass
 
 
 def prompt():
-    with open('passwords.json', 'r') as f:  # Gets the JSON file and stores as variable
+    with open('passwords.json', 'r') as f:  # Gets the JSON file
         password = json.load(f)
     selection = input("Welcome to Passgen!\n "
                       "To generate a password enter: Generate\n "
@@ -27,7 +39,7 @@ def prompt():
         if login.lower() == "stop": prompt()
         generate(use, login)
         print(f"A password for {use} has successfully been generated")
-        prompt() #Re-runs the selection text
+        prompt()  # Re-runs the selection text
     elif selection.lower() == "store":
         use = input("What is usage for this password?\n")
         if use.lower() == "stop": prompt()
@@ -45,7 +57,7 @@ def prompt():
         list_usages()
         prompt()
     elif selection.lower() == "inspect":
-        if len(password) == 0: #Checks if any passwords are stored in passwords.json file
+        if len(password) == 0:  # Checks if any passwords are stored in passwords.json file
             print("You have no passwords stored.")
             prompt()
         else:
@@ -81,6 +93,9 @@ def prompt():
 def generate(use, login):
     with open('passwords.json', 'r') as f:  # Gets the JSON file
         password = json.load(f)
+    with open('key.key', 'rb') as k:
+        key = k.read()
+    decode(key)
     now = datetime.now()  # Gets the date and time
     dateTime = now.strftime("%d/%m/%Y %H:%M:%S")
     chars = list(
@@ -89,6 +104,7 @@ def generate(use, login):
     for char in range(random.randint(8, 20)):  # Randomly generates length of password
         generated.append(chars[random.randint(0, 92)])  # Adds one random character to list
         joint = ''.join(generated)
+    fernet = Fernet(key)
     password[use] = {}  # Gets data ready to be dumped into JSON file
     password[use]["Email/Username"] = login
     password[use]["Password"] = joint
@@ -96,6 +112,7 @@ def generate(use, login):
     print(f"The password for {use} is {joint}\n")
     with open('passwords.json', 'w') as f:  # Gets the JSON file
         json.dump(password, f)  # Gets the JSON file to dump information
+    encryption(fernet)
 
 
 def store(use, login, key):
@@ -112,6 +129,9 @@ def store(use, login, key):
 
 
 def inspect(use):  # When user types a usage for a password that is valid it will print each detail about it
+    with open('key.key', 'rb') as k:
+        key = k.read()
+    decode(key)
     with open("passwords.json", 'r') as f:
         password = json.load(f)
     if use in password:
@@ -139,6 +159,24 @@ def delete(use):
             json.dump(password, f)
     else:
         print(f"{use} does not exist.")
+
+
+def encryption(key):
+    with open('passwords.json', 'rb') as f:
+        data = f.read()
+    encrypted = key.encrypt(data)
+    with open('encrypted.json', 'wb') as e:
+        e.write(encrypted)
+    if os.path.isfile('passwords.json'):
+        os.remove('passwords.json')
+
+
+def decode(key):
+    with open('encrypted.json', 'rb') as e:
+        data = e.read()
+    decrypted = key.decode(data)
+    with open('passwords.json', 'w') as f:
+        json.dump(decrypted)
 
 
 prompt()
