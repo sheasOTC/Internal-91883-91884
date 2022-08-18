@@ -10,7 +10,6 @@ if not os.path.exists('key.key'):  # Checks if file exist; ensures that key file
         key = Fernet.generate_key()
         f.write(key)  # Creates and stores key for encryption/decryption
 
-
 try:
     with open('passwords.json', 'w') as f:
         json.dump({}, f)
@@ -37,7 +36,7 @@ def prompt():
         while use in password:  # Continuously checks if variable use is in the passwords.json file asking to enter a new one until user enters non-taken usage
             if use.lower() == "stop": prompt()
             use = input(f"{use} is already being used for a password. Please enter another\n")
-        login = input("What is the login for this password\n")
+        login = input("What is the login for this password")
         if login.lower() == "stop": prompt()
         generate(use, login)
         print(f"A password for {use} has successfully been generated")
@@ -81,10 +80,11 @@ def prompt():
                 if use.lower() == "stop": prompt()
                 use = input(f"{use} is not a password. Please enter correctly. (Caps Sensitive)\n")
             delete(use)
-            print(f"Successfully deleted {use}")
+            print(f"Successfully deleted {use}\n")
             prompt()
     elif selection.lower() == "exit":
         print("Exiting Passgen")
+        encode()
         time.sleep(0.5)
         quit()
     else:
@@ -135,7 +135,7 @@ def inspect(use):  # When user types a usage for a password that is valid it wil
         password = json.load(f)
     if use in password:
         print(f"The details for {use}: \n" + "Email/Username:" + password[use]['Email/Username'] + " \nPassword:" +
-              password[use]["Password"] + " \nDate and time of creation:" + password[use]["Date/Time"])
+              password[use]["Password"] + " \nDate and time of creation:" + password[use]["Date/Time"] + "\n")
     else:
         print(f"{use} does not exist.")
     encode()
@@ -174,7 +174,6 @@ def encode():
         e.write(encrypted)
 
 
-
 def decode():
     with open('encrypted.json', 'rb') as e:
         encrypted = e.read()
@@ -184,10 +183,9 @@ def decode():
 
 
 def getkey():
-    with open('key.key','r') as k:
+    with open('key.key', 'rb') as k:
         key = k.read()
     return Fernet(key)
-
 
 
 prompt()
