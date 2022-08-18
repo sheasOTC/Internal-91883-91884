@@ -4,6 +4,7 @@ from cryptography.fernet import Fernet
 import random
 from datetime import datetime
 import os.path
+import atexit
 
 if not os.path.exists('key.key'):  # Checks if file exist; ensures that key file is not replaced.
     with open('key.key', 'wb') as f:
@@ -30,16 +31,18 @@ def prompt():
                       "To stop during a command enter: Stop\n "
                       "To exit the program enter: Exit\n "
                       "Note: Stop cannot be used for any usage/login/password. (Not Caps Sensitive)\n")
+
     if selection.lower() == "generate":
         use = input("What is usage for this password?\n")
         if use.lower() == "stop": prompt()  # Checks if "stop" is typed during any points during the prompts
         while use in password:  # Continuously checks if variable use is in the passwords.json file asking to enter a new one until user enters non-taken usage
             if use.lower() == "stop": prompt()
             use = input(f"{use} is already being used for a password. Please enter another\n")
-        login = input("What is the login for this password")
+        login = input("What is the login for this password\n")
         if login.lower() == "stop": prompt()
         generate(use, login)
         prompt()  # Re-runs the selection text
+
     elif selection.lower() == "store":
         use = input("What is usage for this password?\n")
         if use.lower() == "stop": prompt()
@@ -48,14 +51,16 @@ def prompt():
             use = input(f"{use} is already being used for a password. Please enter another\n")
         login = input("What is the login for this password\n")
         if login.lower() == "stop": prompt()
-        key = input(f"What is the password for {use}?\n")
-        if key.lower() == "stop": prompt()
-        store(use, login, key)
-        print(f"Password for {use} has successfully been stored")
+        keyword = input(f"What is the password for {use}?\n")
+        if keyword.lower() == "stop": prompt()
+        store(use, login, keyword)
+        print(f"Password for {use} has successfully been stored\n")
         prompt()
+
     elif selection.lower() == "list":
         list_usages()
         prompt()
+
     elif selection.lower() == "inspect":
         if len(password) == 0:  # Checks if any passwords are stored in passwords.json file
             print("You have no passwords stored.")
@@ -68,6 +73,7 @@ def prompt():
                 use = input(f"Please enter a valid usage.\n")
             inspect(use)
             prompt()
+
     elif selection.lower() == "delete":
         if len(password) == 0:
             print("You have no passwords stored.")
@@ -81,6 +87,7 @@ def prompt():
             delete(use)
             print(f"Successfully deleted {use}\n")
             prompt()
+
     elif selection.lower() == "exit":
         print("Exiting Passgen")
         encode()
@@ -89,6 +96,7 @@ def prompt():
     else:
         print(f"{selection} is not valid.")
         prompt()
+    encode()
 
 
 def generate(use, login):
@@ -100,8 +108,9 @@ def generate(use, login):
     chars = list(
         '~!@#$%^&*()_+`1234567890-=qwertyuiop[]QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:zxcvbnm,./ZXCVBNM<>?')  # List of characters used for password generation
     generated = []
+    numchars = len(chars)
     for char in range(random.randint(8, 20)):  # Randomly generates length of password
-        generated.append(chars[random.randint(0, 92)])  # Adds one random character to list
+        generated.append(chars[random.randint(0, numchars)])  # Adds one random character to list
         joint = ''.join(generated)
     password[use] = {}  # Gets data ready to be dumped into JSON file
     password[use]["Email/Username"] = login
@@ -113,7 +122,7 @@ def generate(use, login):
     encode()
 
 
-def store(use, login):
+def store(use, login, keyword):
     decode()
     with open('passwords.json', 'r') as f:
         password = json.load(f)
@@ -121,7 +130,7 @@ def store(use, login):
     dateTime = now.strftime("%d/%m/%Y %H:%M:%S")
     password[use] = {}
     password[use]["Email/Username"] = login
-    password[use]["Password"] = key
+    password[use]["Password"] = keyword
     password[use]["Date/Time"] = dateTime
     with open('passwords.json', 'w') as f:  # Stores user inputted information such as email and password
         json.dump(password, f)
@@ -156,7 +165,7 @@ def delete(use):
     with open("passwords.json", 'r') as f:
         password = json.load(f)
     if use in password:
-        del password[use]  # Deletes user inputed
+        del password[use]  # Deletes user inputted
         with open("passwords.json", 'w') as f:
             json.dump(password, f)
     else:
@@ -188,3 +197,4 @@ def getkey():
 
 
 prompt()
+atexit.register(encode())  # Used to run encoding while program is shutdown
