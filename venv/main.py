@@ -39,7 +39,6 @@ def prompt():
         login = input("What is the login for this password")
         if login.lower() == "stop": prompt()
         generate(use, login)
-        print(f"A password for {use} has successfully been generated")
         prompt()  # Re-runs the selection text
     elif selection.lower() == "store":
         use = input("What is usage for this password?\n")
