@@ -16,11 +16,7 @@ if not os.path.exists('passwords.json'):
 
 
 def prompt():
-    decode()
-    with open("passwords.json", 'r') as f:  # Reads the passwords,json file to be read
-        password = json.load(f)
-
-    if len(password) == 0:
+    if len(readfile()) == 0:
         selection = input("Welcome to Passgen!\n "
                           "To generate a password enter: Generate\n "
                           "To store a password enter: Store\n "
@@ -39,7 +35,6 @@ def prompt():
                           "To enter user settings enter: Settings\n "
                           "To exit the program enter: Exit\n "
                           "Note: Stop cannot be used for any usage/login/password. (Not Caps Sensitive)\n")
-
     if selection.lower() == "generate":
         generate()
         prompt()  # Re-runs the selection text
@@ -47,15 +42,15 @@ def prompt():
     elif selection.lower() == "store":
         store()
         prompt()
-    elif selection.lower() == "list" and len(password) != 0:
+    elif selection.lower() == "list" and len(readfile()) != 0:
         list_usages()
         prompt()
 
-    elif selection.lower() == "inspect" and len(password) != 0:
+    elif selection.lower() == "inspect" and len(readfile()) != 0:
         inspect()
         prompt()
 
-    elif selection.lower() == "delete" and len(password) != 0:
+    elif selection.lower() == "delete" and len(readfile()) != 0:
         delete()
         prompt()
 
@@ -66,6 +61,7 @@ def prompt():
     elif selection.lower() == "exit":
         print("Exiting Passgen")
         time.sleep(0.5)
+        encode()
         quit()
     else:
         print(f"{selection} is not valid.")
@@ -73,9 +69,7 @@ def prompt():
 
 
 def generate():
-    decode()
-    with open('passwords.json', 'r') as f:  # Gets the JSON file
-        password = json.load(f)
+    password = readfile()
     use = input("What is usage for this password?\n")
     if use.lower() == "stop": prompt()  # Checks if "stop" is typed during any points during the prompts
     while use in password:  # Continuously checks if variable use is in the passwords.json file asking to enter a new one until user enters non-taken usage
@@ -103,9 +97,7 @@ def generate():
 
 
 def store():
-    decode()
-    with open('passwords.json', 'r') as f:
-        password = json.load(f)
+    password = readfile()
 
     use = input("What is usage for this password?\n")
     if use.lower() == "stop": prompt()
@@ -132,9 +124,7 @@ def store():
 
 
 def inspect():  # When user types a usage for a password that is valid it will print each detail about it
-    decode()
-    with open("passwords.json", 'r') as f:
-        password = json.load(f)
+    password = readfile()
     if len(password) == 0:  # Checks if any passwords are stored in passwords.json file
         print("You have no passwords stored.")
         prompt()
@@ -153,9 +143,7 @@ def inspect():  # When user types a usage for a password that is valid it will p
 
 
 def list_usages():  # Lists every single usage for passwords
-    decode()
-    with open('passwords.json', 'r') as f:
-        password = json.load(f)
+    password = readfile()
     for i in password:
         print(i)
     if len(password) == 0:  # Prints out statement if there are no passwords
@@ -164,9 +152,7 @@ def list_usages():  # Lists every single usage for passwords
 
 
 def delete():
-    decode()
-    with open("passwords.json", 'r') as f:
-        password = json.load(f)
+    password = readfile()
     if len(password) == 0:
         print("You have no passwords stored.")
         prompt()
@@ -247,6 +233,14 @@ def decode():
             f.write(decrypted.decode())
     except:
         pass
+
+
+def readfile():  # Used for opening passwords.json file
+    decode()
+    with open("passwords.json", "r") as p:
+        password = json.load(p)
+        return password
+    encode()
 
 
 def getkey():
