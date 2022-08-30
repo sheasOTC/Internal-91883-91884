@@ -3,106 +3,86 @@ import time
 from cryptography.fernet import Fernet
 import random
 from datetime import datetime
-import os.path
-import atexit
+import os
 
 if not os.path.exists('key.key'):  # Checks if file exist; ensures that key file is not replaced.
     with open('key.key', 'wb') as f:
         key = Fernet.generate_key()
         f.write(key)  # Creates and stores key for encryption/decryption
 
-try:
+if not os.path.exists('passwords.json'):
     with open('passwords.json', 'w') as f:
-        json.dump({}, f)
-except:
-    pass
+        f.write('{}')
 
 
 def prompt():
     decode()
-    with open('passwords.json', 'r') as f:  # Gets the JSON file
+    with open("passwords.json", 'r') as f:  # Reads the passwords,json file to be read
         password = json.load(f)
-    selection = input("Welcome to Passgen!\n "
-                      "To generate a password enter: Generate\n "
-                      "To store a password enter: Store\n "
-                      "To list all uses for passwords enter: List\n "
-                      "To see details of a password enter: Inspect\n "
-                      "To delete a password enter: Delete\n "
-                      "To stop during a command enter: Stop\n "
-                      "To exit the program enter: Exit\n "
-                      "Note: Stop cannot be used for any usage/login/password. (Not Caps Sensitive)\n")
+
+    if len(password) == 0:
+        selection = input("Welcome to Passgen!\n "
+                          "To generate a password enter: Generate\n "
+                          "To store a password enter: Store\n "
+                          "To stop during a command enter: Stop\n "
+                          "To enter user settings enter: Settings\n "
+                          "To exit the program enter: Exit\n "
+                          "Note: Stop cannot be used for any usage/login/password. (Not Caps Sensitive)\n")
+    else:
+        selection = input("Welcome to Passgen!\n "
+                          "To generate a password enter: Generate\n "
+                          "To store a password enter: Store\n "
+                          "To list all uses for passwords enter: List\n "
+                          "To see details of a password enter: Inspect\n "
+                          "To delete a password enter: Delete\n "
+                          "To stop during a command enter: Stop\n "
+                          "To enter user settings enter: Settings\n "
+                          "To exit the program enter: Exit\n "
+                          "Note: Stop cannot be used for any usage/login/password. (Not Caps Sensitive)\n")
 
     if selection.lower() == "generate":
-        use = input("What is usage for this password?\n")
-        if use.lower() == "stop": prompt()  # Checks if "stop" is typed during any points during the prompts
-        while use in password:  # Continuously checks if variable use is in the passwords.json file asking to enter a new one until user enters non-taken usage
-            if use.lower() == "stop": prompt()
-            use = input(f"{use} is already being used for a password. Please enter another\n")
-        login = input("What is the login for this password\n")
-        if login.lower() == "stop": prompt()
-        generate(use, login)
+        generate()
         prompt()  # Re-runs the selection text
 
     elif selection.lower() == "store":
-        use = input("What is usage for this password?\n")
-        if use.lower() == "stop": prompt()
-        while use in password:
-            if use.lower() == "stop": prompt()
-            use = input(f"{use} is already being used for a password. Please enter another\n")
-        login = input("What is the login for this password\n")
-        if login.lower() == "stop": prompt()
-        keyword = input(f"What is the password for {use}?\n")
-        if keyword.lower() == "stop": prompt()
-        store(use, login, keyword)
-        print(f"Password for {use} has successfully been stored\n")
+        store()
         prompt()
-
-    elif selection.lower() == "list":
+    elif selection.lower() == "list" and len(password) != 0:
         list_usages()
         prompt()
 
-    elif selection.lower() == "inspect":
-        if len(password) == 0:  # Checks if any passwords are stored in passwords.json file
-            print("You have no passwords stored.")
-            prompt()
-        else:
-            use = input("What is usage for this password?\n")
-            if use.lower() == "stop": prompt()
-            while use not in password:
-                if use.lower() == "stop": prompt()
-                use = input(f"Please enter a valid usage.\n")
-            inspect(use)
-            prompt()
+    elif selection.lower() == "inspect" and len(password) != 0:
+        inspect()
+        prompt()
 
-    elif selection.lower() == "delete":
-        if len(password) == 0:
-            print("You have no passwords stored.")
-            prompt()
-        else:
-            use = input("What is the use of the password you want to delete? (Caps Sensitive)\n")
-            if use.lower() == "stop": prompt()
-            while use not in password:  # Checks if there is a name that exist
-                if use.lower() == "stop": prompt()
-                use = input(f"{use} is not a password. Please enter correctly. (Caps Sensitive)\n")
-            delete(use)
-            print(f"Successfully deleted {use}\n")
-            prompt()
+    elif selection.lower() == "delete" and len(password) != 0:
+        delete()
+        prompt()
+
+    elif selection.lower() == "settings":
+        settings()
+        prompt()
 
     elif selection.lower() == "exit":
         print("Exiting Passgen")
-        encode()
         time.sleep(0.5)
         quit()
     else:
         print(f"{selection} is not valid.")
         prompt()
-    encode()
 
 
-def generate(use, login):
+def generate():
+    decode()
     with open('passwords.json', 'r') as f:  # Gets the JSON file
         password = json.load(f)
-    decode()
+    use = input("What is usage for this password?\n")
+    if use.lower() == "stop": prompt()  # Checks if "stop" is typed during any points during the prompts
+    while use in password:  # Continuously checks if variable use is in the passwords.json file asking to enter a new one until user enters non-taken usage
+        if use.lower() == "stop": prompt()
+        use = input(f"{use} is already being used for a password. Please enter another\n")
+    login = input("What is the login for this password\n")
+    if login.lower() == "stop": prompt()
     now = datetime.now()  # Gets the date and time
     dateTime = now.strftime("%d/%m/%Y %H:%M:%S")
     chars = list(
@@ -110,7 +90,7 @@ def generate(use, login):
     generated = []
     numchars = len(chars)
     for char in range(random.randint(8, 20)):  # Randomly generates length of password
-        generated.append(chars[random.randint(0, numchars)])  # Adds one random character to list
+        generated.append(chars[random.randint(0, numchars - 1)])  # Adds one random character to list
         joint = ''.join(generated)
     password[use] = {}  # Gets data ready to be dumped into JSON file
     password[use]["Email/Username"] = login
@@ -122,25 +102,48 @@ def generate(use, login):
     encode()
 
 
-def store(use, login, keyword):
+def store():
     decode()
     with open('passwords.json', 'r') as f:
         password = json.load(f)
+
+    use = input("What is usage for this password?\n")
+    if use.lower() == "stop": prompt()
+    while use in password:
+        if use.lower() == "stop": prompt()
+        use = input(f"{use} is already being used for a password. Please enter another\n")
+    login = input("What is the login for this password\n")
+    if login.lower() == "stop": prompt()
+    keyword = input(f"What is the password for {use}?\n")
+    if keyword.lower() == "stop": prompt()
+
     now = datetime.now()
     dateTime = now.strftime("%d/%m/%Y %H:%M:%S")
+
     password[use] = {}
     password[use]["Email/Username"] = login
     password[use]["Password"] = keyword
     password[use]["Date/Time"] = dateTime
+    print(f"Password for {use} has successfully been stored\n")
     with open('passwords.json', 'w') as f:  # Stores user inputted information such as email and password
         json.dump(password, f)
+
     encode()
 
 
-def inspect(use):  # When user types a usage for a password that is valid it will print each detail about it
+def inspect():  # When user types a usage for a password that is valid it will print each detail about it
     decode()
     with open("passwords.json", 'r') as f:
         password = json.load(f)
+    if len(password) == 0:  # Checks if any passwords are stored in passwords.json file
+        print("You have no passwords stored.")
+        prompt()
+    else:
+        use = input("What is usage for this password?\n")
+        if use.lower() == "stop": prompt()
+        while use not in password:
+            if use.lower() == "stop": prompt()
+            use = input(f"Please enter a valid usage.\n")
     if use in password:
         print(f"The details for {use}: \n" + "Email/Username:" + password[use]['Email/Username'] + " \nPassword:" +
               password[use]["Password"] + " \nDate and time of creation:" + password[use]["Date/Time"] + "\n")
@@ -160,34 +163,90 @@ def list_usages():  # Lists every single usage for passwords
     encode()
 
 
-def delete(use):
+def delete():
     decode()
     with open("passwords.json", 'r') as f:
         password = json.load(f)
-    if use in password:
-        del password[use]  # Deletes user inputted
-        with open("passwords.json", 'w') as f:
-            json.dump(password, f)
+    if len(password) == 0:
+        print("You have no passwords stored.")
+        prompt()
     else:
-        print(f"{use} does not exist.")
+        use = input("What is the use of the password you want to delete? (Caps Sensitive)\n")
+        if use.lower() == "stop": prompt()
+        while use not in password:  # Checks if there is a name that exist
+            if use.lower() == "stop": prompt()
+            use = input(f"{use} is not a password. Please enter correctly. (Caps Sensitive)\n")
+    del password[use]  # Deletes user inputted
+    print(f"Successfully delete {use}")
+    with open("passwords.json", 'w') as f:
+        json.dump(password, f)
+    encode()
+
+
+def settings():
+    encode()
+    if not os.path.exists('lock.key'):  # Checks if file exists; if so will prompt user for lock to access Passgen
+        selection = input("Welcome to the PassGen user settings!\n "
+                          "To create a lock for Passgen enter: Lock\n "
+                          "To export the save for passwords enter: Export\n "
+                          "To import a save for passwords enter: Import\n")
+    else:
+        selection = input("Welcome to the PassGen user settings!\n "
+                          "To create a lock for Passgen enter: Lock\n "
+                          "To remove the lock for PassGen enter: Unlock\n "
+                          "To export the save for passwords enter: Export\n "
+                          "To import a save for passwords enter: Import\n")
+
+    if selection.lower() == "lock":
+        lock = input("What do you want the lock for Passgen be?\n")
+        encrypted = getkey().encrypt(lock.encode())
+        with open("lock.key", "wb") as l:
+            l.write(encrypted)
+        print("You have successfully made a lock.\n")
+    elif selection.lower() == "unlock" and os.path.exists("lock.key"):
+        question = input("Are you sure you wanna the lock? (Yes or No)\n")
+        if question == 'stop': pass
+        while question.lower() != 'no' and question.lower() != 'n' and question.lower() != 'yes' and question.lower() != 'y':
+            question = input(f"{question} is not valid. Please enter (Yes or No). \n")
+            if question == 'stop': pass
+        if question.lower() == 'yes' or question.lower() == 'y':
+            os.remove('lock.key')
+            print("You have successfully removed the lock.\n")
+        elif question.lower() == 'no' or question.lower() == 'n':
+            pass
+    elif selection.lower() == "export":
+        with open("encrypted.json", 'rb') as e:
+            data = e.read()  # Outputs data to be imported into a different PassGen
+        if data.decode() is None:
+            print("There is no data.")
+        print(data.decode())
+    elif selection.lower() == "location":
+        pass
+    elif selection.lower() == "import":
+        imported = input("Enter the exported save.\n")
+        with open("encrypted.json", "wb") as e:
+            e.write(imported.encode())
 
 
 def encode():
     with open('passwords.json', 'rb') as f:
         data = f.read()
     encrypted = getkey().encrypt(data)
-    if os.path.isfile('passwords.json'):
+    if os.path.isfile('passwords.json'):  # Deletes passwords file once data has been encrypted
         os.remove('passwords.json')
     with open('encrypted.json', 'wb') as e:
         e.write(encrypted)
 
 
 def decode():
-    with open('encrypted.json', 'rb') as e:
-        encrypted = e.read()
-    decrypted = getkey().decrypt(encrypted)
-    with open('passwords.json', 'w') as f:
-        f.write(decrypted.decode())
+    try:
+        with open('encrypted.json', 'rb') as e:
+            encrypted = e.read()
+        decrypted = getkey().decrypt(encrypted)
+        with open('passwords.json', 'w') as f:
+            f.write(decrypted.decode())
+    except:
+        pass
 
 
 def getkey():
@@ -196,5 +255,13 @@ def getkey():
     return Fernet(key)
 
 
-prompt()
-atexit.register(encode())  # Used to run encoding while program is shutdown
+if os.path.exists('lock.key'):  # Checks if file exists; if so will prompt user for lock to access Passgen
+    with open('lock.key', 'rb') as l:
+        lock = l.read()
+    decrypt = getkey().decrypt(lock)
+    locked = input("Enter lock.\n")
+    while locked != decrypt.decode():
+        locked = input("That is not the lock, please try again.\n")
+    prompt()
+else:
+    prompt()
