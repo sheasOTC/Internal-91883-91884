@@ -10,10 +10,6 @@ if not os.path.exists('key.key'):  # Checks if file exist; ensures that key file
         key = Fernet.generate_key()
         f.write(key)  # Creates and stores key for encryption/decryption
 
-if not os.path.exists('passwords.json'):
-    with open('passwords.json', 'w') as f:
-        f.write('{}')
-
 
 def prompt():
     if len(readfile()) == 0:
@@ -92,13 +88,12 @@ def generate():
     password[use]["Date/Time"] = dateTime
     print(f"The password for {use} is {joint}\n")
     with open('passwords.json', 'w') as f:  # Gets the JSON file
-        json.dump(password, f)  # Gets the JSON file to dump information
+        json.dump(password, f)  # dumps information
     encode()
 
 
 def store():
     password = readfile()
-
     use = input("What is usage for this password?\n")
     if use.lower() == "stop": prompt()
     while use in password:
@@ -185,6 +180,7 @@ def settings():
 
     if selection.lower() == "lock":
         lock = input("What do you want the lock for Passgen be?\n")
+        if lock == 'stop': pass
         encrypted = getkey().encrypt(lock.encode())
         with open("lock.key", "wb") as l:
             l.write(encrypted)
@@ -219,7 +215,7 @@ def encode():
         data = f.read()
     encrypted = getkey().encrypt(data)
     if os.path.isfile('passwords.json'):  # Deletes passwords file once data has been encrypted
-        os.remove('passwords.json')
+        os.system("attrib +h passwords.json")
     with open('encrypted.json', 'wb') as e:
         e.write(encrypted)
 
@@ -240,7 +236,6 @@ def readfile():  # Used for opening passwords.json file
     with open("passwords.json", "r") as p:
         password = json.load(p)
         return password
-    encode()
 
 
 def getkey():
